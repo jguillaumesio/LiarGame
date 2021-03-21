@@ -1,7 +1,11 @@
 <?php
-use Workerman\Worker;
+
 require_once './vendor/autoload.php';
+require_once '../app/models/game.php';
 require_once '../database.php';
+
+use models\Game;
+use Workerman\Worker;
 
 $ws_worker = new Worker("websocket://0.0.0.0:2346");
 
@@ -11,41 +15,24 @@ $ws_worker->games=[];
 
 $ws_worker->players=[];
 
-function gameExist($id,$list){
-    foreach($list as $i => $value){
-        if($i==$id){
-            echo "true";
-            return true;
-        }
-    }
-    echo "false";
-    return false;
-}
-
-$ws_worker->onConnect = function ($connection) {
-    $connection->send(\json_encode(['connected'=>$connection->id]));
-};
-
 $ws_worker->onMessage = function ($connection, $data) use ($ws_worker){
     global $ws_worker;
-    global $list;
     $dataArray=\json_decode($data);
-    $connection->send($data);
     $self=$connection;
     if(isset($dataArray->create) && $dataArray->create){
         $ws_worker->players[$connection->id][]=$dataArray->game_id;
-        $ws_worker->games[$dataArray->game_id]=['state'=>0,'creator'=>$connection->id,'word'=>$list[\array_rand($list)],'players'=>[$connection->id=>$dataArray->pseudo]];
-        $connection->send(\json_encode(\array_merge(['created'=>true],$ws_worker->games[$dataArray->game_id])));
+        $ws_worker->games[$dataArray->game_id]=new models\Game($connection->id,$dataArray->max,$dataArray->pseudo,$dataArray->game_id);
+        $connection->send($ws_worker->games[$dataArray->game_id]->creating());
     }
     if(isset($dataArray->join)){
-        if($ws_worker->games[$dataArray->game_id]['state']==0 && gameExist($dataArray->game_id,$ws_worker->games)){
+        if($ws_worker->games[$dataArray->game_id]->getState()==0 && Game::gameExist($dataArray->game_id)){
             $ws_worker->players[$connection->id][]=$dataArray->game_id;
-            $ws_worker->games[$dataArray->game_id]['players'][$connection->id]=$dataArray->pseudo;
-            $connection->send(json_encode(\array_merge($ws_worker->games[$dataArray->game_id],['joined'=>true])));
-            foreach($ws_worker->games[$dataArray->game_id]['players'] as $i => $value){
+            $data=$ws_worker->games[$dataArray->game_id]->joining($connection->id,$dataArray->pseudo);
+            $connection->send($data);
+            foreach($ws_worker->games[$dataArray->game_id]->getPlayers() as $i => $value){
                 if($i != $self->id){
                     $connection = $ws_worker->connections[$i];
-                    $connection->send(\json_encode(['id'=>$self->id,'joining'=>$ws_worker->games[$dataArray->game_id]['players'][$self->id]]));
+                    $connection->send(\json_encode(['id'=>$self->id,'joining'=>$ws_worker->games[$dataArray->game_id]->getPlayers()[$self->id]]));
                 }
             }
         }else{
@@ -53,56 +40,63 @@ $ws_worker->onMessage = function ($connection, $data) use ($ws_worker){
         }
     }
     if(isset($dataArray->start)){
-        if($ws_worker->games[$dataArray->game_id]['creator']==$connection->id){
-            $ws_worker->games[$dataArray->game_id]['state']=1;
-            $ws_worker->games[$dataArray->game_id]['liar']=\array_rand($ws_worker->games[$dataArray->game_id]['players']);
-            foreach($ws_worker->games[$dataArray->game_id]['players'] as $i => $value){
+        if($ws_worker->games[$dataArray->game_id]->getCreator()==$connection->id){
+            $data=$ws_worker->games[$dataArray->game_id]->starting();
+            foreach($ws_worker->games[$dataArray->game_id]->getPlayers() as $i => $value){
                 $connection = $ws_worker->connections[$i];
-                if($ws_worker->games[$dataArray->game_id]['liar']==$i){
+                if($ws_worker->games[$dataArray->game_id]->getLiar()==$i){
                     $copy=$ws_worker->games[$dataArray->game_id];
-                    $copy['word']="Menteur";
-                    $connection->send(\json_encode(\array_merge(['starting'=>true],$copy)));
+                    $connection->send($copy->setMenteur());
+                    unset($copy);
                 }
                 else{
-                    $connection->send(\json_encode(\array_merge(['starting'=>true],$ws_worker->games[$dataArray->game_id])));
+                    $connection->send($data);
                 }
             }
         }
     }
     if(isset($dataArray->stop)){
-        if($ws_worker->games[$dataArray->game_id]['creator']==$connection->id){
-            $ws_worker->games[$dataArray->game_id]['state']=2;
-            foreach($ws_worker->games[$dataArray->game_id]['players'] as $i => $value){
+        if($ws_worker->games[$dataArray->game_id]->getCreator()==$connection->id){
+            Game::deleteGame($dataArray->game_id);
+            $data=$ws_worker->games[$dataArray->game_id]->stopping();
+            foreach($ws_worker->games[$dataArray->game_id]->getPlayers() as $i => $value){
                 $connection = $ws_worker->connections[$i];
-                $connection->send(\json_encode(\array_merge(['stopped'=>true],$ws_worker->games[$dataArray->game_id])));
+                $connection->send($data);
+                foreach($ws_worker->players[$i] as $gkey=>$gvalue){
+                    if($gvalue==$dataArray->game_id){
+                        unset($ws_worker->players[$i][$gkey]);
+                    }
+                }
             }
+            unset($ws_worker->games[$dataArray->game_id]);
         }
     }
     if(isset($dataArray->gameExist)){
-        if(gameExist($dataArray->gameExist,$ws_worker->games)){$connection->send(\json_encode(["gameExist"=>true]));}else{$connection->send(\json_encode(["gameExist"=>false]));}
+        $connection->send(Game::gameExist($dataArray->gameExist));
     }
 };
 
 $ws_worker->onClose = function ($connection) use($ws_worker){
+    echo $connection->id;
     global $ws_worker;
     $self=$connection;
     if(isset($ws_worker->players[$connection->id])){
-        foreach($ws_worker->players[$connection->id] as $i){
-            if($connection->id==$ws_worker->games[$i]['creator']){
-                foreach($ws_worker->games[$i]['players'] as $key => $value){
+        foreach($ws_worker->players[$connection->id] as $i=>$val){
+            if($connection->id==$ws_worker->games[$i]->getCreator()){
+                foreach($ws_worker->games[$i]->getPlayers() as $key => $value){
                     $connection = $ws_worker->connections[$key];
-                    $connection->send(\json_encode(\array_merge(['stopped'=>true],$ws_worker->games[$i])));
+                    $connection->send($ws_worker->games[$i]->stopping());
+
                 }
                 unset($ws_worker->games[$i]);
             }
             else{
-                foreach($ws_worker->games[$i]['players'] as $playerKey => $playerValue){
+                $data=$ws_worker->games[$i]->leaving($self->id);
+                foreach($ws_worker->games[$i]->getPlayers() as $playerKey => $playerValue){
                     $connection=$ws_worker->connections[$playerKey];
-                    $connection->send(\json_encode(['leaving'=>$self->id]));
+                    $connection->send($data);
                 }
-                unset($ws_worker->games[$i]['players'][$connection->id]);
             }
-            var_dump($ws_worker->games[$i]);
         }
     }
     echo "Connection closed\n";

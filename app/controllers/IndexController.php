@@ -33,11 +33,8 @@ class IndexController extends ControllerBase {
 	public function game(string $id){
 	    $this->uiService->game($id);
 	    if(URequest::isPost()){
-	        if(URequest::post('join_id')){
-	            $this->jquery->execAtLast('window.ws.send(\'{"gameExist":'.\json_encode($id).'}\');');
-	        }
 	        if(URequest::post('name')!= null && URequest::post('pseudo')!= null && URequest::post('max')!= null){
-	            $this->jquery->execAtLast('window.ws.send(\'{"create":true,"game_id":'.\json_encode($id).',"pseudo":"'.URequest::post('pseudo').'"}\');$("#startGame").removeClass("hidden");');
+	            $this->jquery->execAtLast('window.ws.send(\'{"create":true,"game_id":'.\json_encode($id).',"max":"'.URequest::post('max').'","pseudo":"'.URequest::post('pseudo').'"}\');$("#startGame").removeClass("hidden");');
 	        }
 	    }
 	    else{

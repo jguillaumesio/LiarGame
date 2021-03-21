@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c736135c36a694060a4f68df291aac13",
+    "content-hash": "b65ed060d39e57f685fda27b487619e4",
     "packages": [
         {
             "name": "phpmv/ubiquity",
@@ -880,7 +880,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.4"
+        "php": ">=8.0"
     },
     "platform-dev": [],
     "plugin-api-version": "2.0.0"

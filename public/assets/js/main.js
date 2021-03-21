@@ -2,7 +2,7 @@ function getBaseUrl() {
     var re = new RegExp(/^.*\/\/[^\/]+/);
     return re.exec(window.location.href);
 }
-url="http://127.0.0.1:8090/";
+base_url = "http://127.0.0.1:8090/";
 window.ws = new WebSocket("ws:/127.0.0.1:2346");
 window.ws.onmessage = function(e) {
 	var obj = JSON.parse(e.data);
@@ -69,22 +69,22 @@ window.ws.onmessage = function(e) {
 	if('gameExist' in obj){
 		console.log(obj);
 		if(!obj.gameExist){
-			$.get(url, function( data ) {
+			$.get(base_url, function( data ) {
 				$( "body" ).html( data );
 				$('body').toast({class: 'warning',showIcon: false,message: 'Cette partie n\'existe pas'});
 				});
-			window.history.pushState("Liar Game", "Liar Game", url);
+			window.history.pushState("Liar Game", "Liar Game", base_url);
 			
 		}
 	}
 	
 	if('stopped' in obj){
 		if(obj.stopped){
-			$.get(url, function( data ) {
+			$.get(base_url, function( data ) {
 				$( "body" ).html( data );
 				$('body').toast({class: 'warning',showIcon: false,message: 'Cette partie n\'existe pas'});
 				});
-			window.history.pushState("Liar Game", "Liar Game", url);
+			window.history.pushState("Liar Game", "Liar Game", base_url);
 		}
 	}
 };
