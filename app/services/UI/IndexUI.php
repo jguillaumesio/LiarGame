@@ -19,7 +19,7 @@ class IndexUI {
         $this->jquery->getOnClick('#create',Router::path('create'),'#response',[
             'hasLoader'=>false,
         ]);
-        $this->jquery->semantic()->htmlButton('join','Join a game',null,'$("#join_dialog").removeClass("hidden");$("#join_dialog").modal({closable:false});$("#join_dialog").modal("show")');
+        $this->jquery->semantic()->htmlButton('join','Join a game');
         $form=$this->jquery->semantic()->htmlForm('form_join');
         $form->addInput('join_id');
         $form->addButton('submit_join','Rejoindre');
@@ -30,13 +30,15 @@ class IndexUI {
             'jsCallback'=>'window.history.pushState("Liar Game", "Liar Game", url);'
             
         ]);
+        $this->jquery->getOnClick('#join',Router::path('join'),'body');
     }
     
     public function create(){
         $form=$this->jquery->semantic()->htmlForm('form_create');
-        $form->addInput('name');
-        $form->addInput('pseudo');
-        $form->addInput('max');
+        $form->addInput('name','Nom de la partie');
+        $form->addInput('pseudo','Votre pseudo');
+        $form->addInput('max','Nombre maximum de joueurs');
+        $form->addCheckbox('public','Partie public ?');
         $form->addButton('submit_create','Créer');
         $form->addButton('cancel','Annuler');
         $id=\uniqid();
@@ -55,5 +57,11 @@ class IndexUI {
         $form->addButton('submit_pseudo','Valider',null,'window.ws.send(\'{"game_id":"'.$id.'","pseudo":"\'+$("#pseudo").val()+\'","join":true}\');$("#pseudo_dialog").modal("hide");$("#pseudo_dialog").remove();');
         $this->jquery->semantic()->htmlButton('startGame','Commencer la partie','hidden','$("#stopGame").removeClass("hidden");$("#startGame").addClass("hidden");window.ws.send(\'{"game_id":"'.$id.'","start":true}\');');
         $this->jquery->semantic()->htmlButton('stopGame','Stopper la partie','hidden','window.ws.send(\'{"game_id":"'.$id.'","stop":true}\');');
+    }
+
+    public function join(){
+        $table=$this->jquery->semantic()->htmlTable("table_join",1,3);
+        $table->setHeaderValues(["Name","Players",""]);
+        $table->setRowValues(0,["","",""]);
     }
 }

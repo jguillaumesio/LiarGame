@@ -34,16 +34,23 @@ class IndexController extends ControllerBase {
 	    $this->uiService->game($id);
 	    if(URequest::isPost()){
 	        if(URequest::post('name')!= null && URequest::post('pseudo')!= null && URequest::post('max')!= null){
-	            $this->jquery->execAtLast('window.ws.send(\'{"create":true,"game_id":'.\json_encode($id).',"max":"'.URequest::post('max').'","pseudo":"'.URequest::post('pseudo').'"}\');$("#startGame").removeClass("hidden");');
+                $public=false;
+	            if(URequest::post('public')){
+                    $public=true;
+                }
+	            $this->jquery->execAtLast('window.ws.send(\'{"create":true,"name":"'.URequest::post('name').'","game_id":'.\json_encode($id).',"max":"'.URequest::post('max').'","pseudo":"'.URequest::post('pseudo').'","public":"'.$public.'"}\');$("#startGame").removeClass("hidden");');
 	        }
 	    }
 	    else{
-	        $this->jquery->execAtLast('
-            window.ws.send(\'{"gameExist":'.\json_encode($id).'}\');
-            $("#pseudo_dialog").removeClass("hidden");
-            $("#pseudo_dialog").modal({closable:false});
-            $("#pseudo_dialog").modal("show");');
+	        $this->jquery->execAtLast('window.ws.send(\'{"gameExist":'.\json_encode($id).'}\');');
 	    }
 	    $this->jquery->renderView('IndexController/game.html');
 	}
+
+    #[Route('/join', name:'join', methods:['get'])]
+	public function join(){
+        $this->uiService->join();
+        $this->jquery->exec('window.ws.send(\'{"joinList":"true"}\');',true);
+        $this->jquery->renderView("IndexController/join.html");
+    }
 }

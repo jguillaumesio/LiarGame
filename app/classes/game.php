@@ -4,25 +4,33 @@ namespace models;
 class Game{
     private static array $gameList=[];
     private string $id;
+    private string $name;
     private int $state;
     private int $creator;
     private string $word;
     private int $max;
     private string $liar;
     private array $players;
+    private bool $public;
 
-    function __construct(int $creator_id, int $max, string $pseudo, string $id)
+    function __construct(int $creator_id, string $name, int $max, string $pseudo, string $id, bool $public)
     {
         $this->id = $id;
         $this->state = 0;
         $this->max = $max;
+        $this->name=$name;
         $this->creator = $creator_id;
         $this->players[$creator_id]=$pseudo;
+        $this->public=$public;
         Game::$gameList[]=$id;
     }
 
     function getState():int{
         return $this->state;
+    }
+
+    function getMax():int{
+        return $this->max;
     }
 
     function getCreator():int{
@@ -37,6 +45,18 @@ class Game{
         return $this->liar;
     }
 
+    function getPlayersNumber():int{
+        return count($this->players);
+    }
+
+    function getName():string{
+        return $this->name;
+    }
+
+    function isPublic():bool{
+        return($this->public);
+    }
+
     function setMenteur(){
         $this->word="Menteur";
         return(\json_encode(\array_merge(['starting'=>true],\get_object_vars($this))));
@@ -44,10 +64,10 @@ class Game{
 
     static function gameExist(string $id){
         if(\in_array($id,Game::$gameList)){
-            return(\json_encode(["gameExist"=>true]));
+            return True;
         }
         else{
-            return(\json_encode(["gameExist"=>false]));
+            return False;
         }
     }
 
@@ -59,7 +79,12 @@ class Game{
         }
     }
 
+    static function gameList(){
+        return Game::$gameList;
+    }
+
     function creating(){
+
         return(\json_encode(\array_merge(['created'=>true],\get_object_vars($this))));
     }
 
@@ -83,6 +108,7 @@ class Game{
     }
 
     function stopping(){
+        Game::deleteGame($this->id);
         return(\json_encode(\array_merge(['stopped'=>true],\get_object_vars($this))));
     }
 }

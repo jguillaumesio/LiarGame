@@ -1,7 +1,11 @@
-function getBaseUrl() {
-    var re = new RegExp(/^.*\/\/[^\/]+/);
-    return re.exec(window.location.href);
+function redirectWithMessage(url,message){
+	$.get(url, function( data ) {
+		$( 'body' ).html( data );
+		$('body').toast({class: 'warning',showIcon: false,message: message});
+	});
+	window.history.pushState('Liar Game', 'Liar Game', url);
 }
+
 base_url = "http://127.0.0.1:8090/";
 window.ws = new WebSocket("ws:/127.0.0.1:2346");
 window.ws.onmessage = function(e) {
@@ -29,7 +33,7 @@ window.ws.onmessage = function(e) {
 			$("#players").append('<div class="item" id="'+obj.id+'"><div class="content"><p class="header">'+obj.joining+'</p></div></div>');
 		}
 		else{
-			$('body').toast({class: 'warning',showIcon: false,message: 'Cette partie n\'existe pas'});
+			redirectWithMessage(base_url,obj.message);
 		}
 	}
 	
@@ -51,30 +55,35 @@ window.ws.onmessage = function(e) {
 				seconds += 1;
 			}
     		if(seconds<10 && min<10){
-				$("#timer").text("0"+min+":0"+seconds);
+				$("#sec").text("0"+seconds);
+				$("#min").text("0"+min);
 			}
-			else if(seconds){
-				$("#timer").text("0"+min+":"+seconds);
+			else if(seconds>=10 && min<10){
+				$("#sec").text(seconds);
+				$("#min").text("0"+min);
 			}
-			else if(min>10){
-				$("#timer").text(min+":0"+seconds);
+			else if(min>=10 && seconds<10){
+				$("#sec").text("0"+seconds);
+				$("#min").text(min);
 			}
 			else{
-				$("#timer").text(min+":"+seconds);
+				$("#sec").text(seconds);
+				$("#min").text(min);
 			}
 		}
 		var cancel = setInterval(incrementSeconds, 1000);
 	}
 	
-	if('gameExist' in obj){
+	if('canJoin' in obj){
 		console.log(obj);
-		if(!obj.gameExist){
-			$.get(base_url, function( data ) {
-				$( "body" ).html( data );
-				$('body').toast({class: 'warning',showIcon: false,message: 'Cette partie n\'existe pas'});
-				});
-			window.history.pushState("Liar Game", "Liar Game", base_url);
-			
+		if(!obj.canJoin){
+			redirectWithMessage(base_url,obj.message);
+		}
+		else{
+			var dialog=$("#pseudo_dialog");
+			dialog.removeClass("hidden");
+			dialog.modal({closable:false});
+			dialog.modal("show");
 		}
 	}
 	
@@ -85,6 +94,18 @@ window.ws.onmessage = function(e) {
 				$('body').toast({class: 'warning',showIcon: false,message: 'Cette partie n\'existe pas'});
 				});
 			window.history.pushState("Liar Game", "Liar Game", base_url);
+		}
+	}
+
+	if('list' in obj){
+		var list=JSON.parse(JSON.stringify(obj.list));
+		$("#table_join tbody tr:first").remove();
+		if(list.length==0){
+			$("#table_join").find('tbody').append('<tr><td colSpan="3">Il n\'y a pas de partie disponible, créez en une !</td></tr>');
+		}
+		for(const[i,value] of Object.entries(list)){
+			console.log(value.players.toString());
+			$("#table_join").find('tbody').append('<tr id="htmltablecontent--0" class=""><th id="htmltr-htmltablecontent--0-0" class="">'+value.name+'</th> <th id="htmltr-htmltablecontent--0-1" class="">'+value.players+'</th> <th id="htmltr-htmltablecontent--0-2" class=""><a href="/game/'+i+'">Join</a></th></tr>');
 		}
 	}
 };
