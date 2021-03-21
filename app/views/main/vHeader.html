@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+{% block header %}
+	<base href="{{config["siteUrl"]}}">
+	<meta charset="UTF-8">
+	<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+	<title>liargame</title>
+{% endblock %}
+{% block css %}
+	{{ css('https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.7/dist/semantic.min.css') }}
+	{{css('css/style.css') | raw}}
+{% endblock %}
+{% block scripts %}
+	{{ js('js/main.js') | raw}}
+	{{ js('js/timer.js') | raw}}
+{% endblock %}
+</head>
+<body>

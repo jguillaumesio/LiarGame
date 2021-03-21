@@ -1,0 +1,2 @@
+<?php
+return array("/create/"=>["get"=>["controller"=>"controllers\\IndexController","action"=>"create","parameters"=>[],"name"=>"create","cache"=>false,"duration"=>0]],"/game/(.+?)/"=>["get"=>["controller"=>"controllers\\IndexController","action"=>"game","parameters"=>[0],"name"=>"game","cache"=>false,"duration"=>0],"post"=>["controller"=>"controllers\\IndexController","action"=>"game","parameters"=>[0],"name"=>"game","cache"=>false,"duration"=>0]]);
