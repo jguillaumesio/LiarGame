@@ -46,7 +46,7 @@ class IndexUI {
             'hasLoader'=>false,
             'jsCallback'=>'window.history.pushState("Liar Game", "Liar Game", "/game/'.$id.'");'
         ]);
-        $this->jquery->getOnClick('#cancel',Router::path('_default'),'#response',[
+        $this->jquery->getOnClick('#cancel',Router::path('_default'),'body',[
             'hasLoader'=>false,
         ]);
     }

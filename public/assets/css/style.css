@@ -1,3 +1,11 @@
+@keyframes bounce{
+	0% {transform: translateY(0);}
+	25%  {transform: translateY(-50px) translateX(10px) rotate(5deg);}
+	50%   {transform: translateY(0);}
+	75%  {transform: translateY(-50px) translateX(-10px) rotate(-5deg);}
+	100%   {transform: translateY(0);}
+}
+
 body{
 	background: #44a08d;
 	background: linear-gradient(90deg,#44a08d 0%, #093637 100%);
@@ -5,6 +13,41 @@ body{
 	justify-content:center;
 	align-items:center;
 	flex-direction:column;
+}
+
+#logo{
+	padding:100px 0;
+	width:100vw;
+	height:200px;
+	box-sizing: content-box;
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	flex-direction:row;
+}
+
+#logo img{
+	height:100%;
+	width:auto;
+	animation: bounce 2s ease infinite;
+}
+
+.text{
+	transform: rotate(-10deg);
+	font-size:20px;
+	color:white;
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	flex-direction:column;
+}
+
+.text p:first-child{
+	font-size: 100px;
+}
+
+.text p{
+	margin:-15px 0;
 }
 
 #container{
