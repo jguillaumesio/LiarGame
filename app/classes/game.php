@@ -125,7 +125,6 @@ class Game{
     
     function playersToJson():array{
     	$convertedPlayers=[];
-    	var_dump($this->getPlayers());
     	$self=clone $this;
     	foreach($self->getPlayers() as $player){
     		$convertedPlayers[$player->getId()]=$player->getPseudo();

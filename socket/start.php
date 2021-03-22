@@ -34,7 +34,7 @@ $ws_worker->onMessage = function ($connection, $data) use ($ws_worker){
 
     if(isset($dataArray->create) && $dataArray->create){
     	$player=new Player($connection->id,$dataArray->pseudo,$dataArray->game_id);
-        $ws_worker->players[$connection->id][]=$player;
+        $ws_worker->players[$connection->id]=$player;
         $ws_worker->games[$dataArray->game_id]=new Game($dataArray->name,$dataArray->max,$player,$dataArray->game_id,$dataArray->public);
         $connection->send($ws_worker->games[$dataArray->game_id]->creating());
     }
@@ -68,7 +68,7 @@ $ws_worker->onMessage = function ($connection, $data) use ($ws_worker){
             foreach($game->getPlayers() as $player){
             	$connection = $ws_worker->connections[$player->getId()];
             	if($game->getLiar()==$player->getId()){
-                    $copy=$game;
+                    $copy=clone $game;
                     $connection->send($copy->setMenteur());
                     unset($copy);
                 }
@@ -80,15 +80,17 @@ $ws_worker->onMessage = function ($connection, $data) use ($ws_worker){
     }
 
     if(isset($dataArray->stop)){
-        $game=$ws_worker->games[$dataArray->game_id];
-        if($game->getCreator()==$connection->id){
-            $data=$game->stopping();
-            foreach($game->getPlayers() as $player){
-            	$connection = $ws_worker->connections[$player->getId()];
-                $connection->send($data);
-                unset($ws_worker->players[$player->getId()]);
+        if(Game::gameExist($dataArray->game_id)){
+            $game=$ws_worker->games[$dataArray->game_id];
+            if($game->getCreator()==$connection->id){
+                $data=$game->stopping();
+                foreach($game->getPlayers() as $player){
+                    $connection = $ws_worker->connections[$player->getId()];
+                    $connection->send($data);
+                    unset($ws_worker->players[$player->getId()]);
+                }
+                unset($ws_worker->games[$dataArray->game_id]);
             }
-            unset($ws_worker->games[$dataArray->game_id]);
         }
     }
 

@@ -1,7 +1,7 @@
 function redirectWithMessage(url,message){
 	$.get(url, function( data ) {
 		$( 'body' ).html( data );
-		$('body').toast({class: 'warning',showIcon: false,message: message});
+		$('body').toast({position:'top center',class: 'error',showIcon: false,message: message});
 	});
 	window.history.pushState('Liar Game', 'Liar Game', url);
 }
@@ -43,6 +43,7 @@ window.ws.onmessage = function(e) {
 	}
 	
 	if('starting' in obj){
+		$("#link").remove();
 		$("#game").append("<p>"+obj.word+"</p>");
 		var seconds = 0;
 		var min = 0;
@@ -91,7 +92,7 @@ window.ws.onmessage = function(e) {
 		if(obj.stopped){
 			$.get(base_url, function( data ) {
 				$( "body" ).html( data );
-				$('body').toast({class: 'warning',showIcon: false,message: 'Cette partie n\'existe pas'});
+				$('body').toast({position:'top center',class: 'success',showIcon: false,message: 'Cette partie est finie'});
 				});
 			window.history.pushState("Liar Game", "Liar Game", base_url);
 		}

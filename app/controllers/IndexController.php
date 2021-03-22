@@ -34,7 +34,7 @@ class IndexController extends ControllerBase {
 	    $this->uiService->game($id);
 	    if(URequest::isPost()){
 	        if(URequest::post('name')!= null && URequest::post('pseudo')!= null && URequest::post('max')!= null){
-	            $this->jquery->execAtLast('window.ws.send(\'{"create":true,"name":"'.URequest::filled('name').'","game_id":'.\json_encode($id).',"max":"'.URequest::post('max').'","pseudo":"'.URequest::post('pseudo').'","public":"'.URequest::getBoolean('public').'"}\');$("#startGame").removeClass("hidden");');
+	            $this->jquery->execAtLast('window.ws.send(\'{"create":true,"name":"'.URequest::post('name').'","game_id":'.\json_encode($id).',"max":"'.URequest::post('max').'","pseudo":"'.URequest::post('pseudo').'","public":"'.URequest::getBoolean('public').'"}\');$("#startGame").removeClass("hidden");');
 	        }
 	    }
 	    else{

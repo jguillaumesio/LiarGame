@@ -57,6 +57,7 @@ class IndexUI {
         $form->addButton('submit_pseudo',TranslatorManager::trans('validate',[],'test'),null,'window.ws.send(\'{"game_id":"'.$id.'","pseudo":"\'+$("#pseudo").val()+\'","join":true}\');$("#pseudo_dialog").modal("hide");$("#pseudo_dialog").remove();');
         $this->jquery->semantic()->htmlButton('startGame',TranslatorManager::trans('start',[],'test'),'hidden','$("#stopGame").removeClass("hidden");$("#startGame").addClass("hidden");window.ws.send(\'{"game_id":"'.$id.'","start":true}\');');
         $this->jquery->semantic()->htmlButton('stopGame',TranslatorManager::trans('finish',[],'test'),'hidden','window.ws.send(\'{"game_id":"'.$id.'","stop":true}\');');
+        $link=$this->jquery->semantic()->htmlInput('link','text','https://127.0.0.1:8090/'.Router::path('game',[$id]));
     }
 
     public function join(){
