@@ -33,7 +33,7 @@ $ws_worker->onMessage = function ($connection, $data) use ($ws_worker){
 
     if(isset($dataArray->create) && $dataArray->create){
         $ws_worker->players[$connection->id][]=$dataArray->game_id;
-        $ws_worker->games[$dataArray->game_id]=new models\Game($connection->id,$dataArray->name,$dataArray->max,$dataArray->pseudo,$dataArray->game_id,$dataArray->public);
+        $ws_worker->games[$dataArray->game_id]=new Game($connection->id,$dataArray->name,$dataArray->max,$dataArray->pseudo,$dataArray->game_id,$dataArray->public);
         $connection->send($ws_worker->games[$dataArray->game_id]->creating());
     }
 
