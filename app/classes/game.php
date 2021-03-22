@@ -13,14 +13,14 @@ class Game{
     private array $players;
     private bool $public;
 
-    function __construct(int $creator_id, string $name, int $max, string $pseudo, string $id, bool $public)
+    function __construct(string $name, int $max, Player $player, string $id, bool $public)
     {
         $this->id = $id;
         $this->state = 0;
         $this->max = $max;
         $this->name=$name;
-        $this->creator = $creator_id;
-        $this->players[$creator_id]=$pseudo;
+        $this->creator = $player->getId();
+        $this->players[]=$player;
         $this->public=$public;
         Game::$gameList[]=$id;
     }
@@ -37,6 +37,14 @@ class Game{
         return $this->creator;
     }
 
+    function getPlayer(int $id){
+    	foreach($this->getPlayers() as $player){
+    		if($player->getId()==$id){
+    			return($player);
+    		}
+    	}
+    }
+    
     function getPlayers():array{
         return $this->players;
     }
@@ -59,10 +67,14 @@ class Game{
 
     function setMenteur(){
         $this->word="Menteur";
-        return(\json_encode(\array_merge(['starting'=>true],\get_object_vars($this))));
+        return(\json_encode(\array_merge(['starting'=>true],$this->playersToJson())));
     }
 
-    static function gameExist(string $id){
+    function setPlayers(array $players){
+    	$this->players=$players;
+    }
+    
+    static function gameExist(string $id):bool{
         if(\in_array($id,Game::$gameList)){
             return True;
         }
@@ -79,36 +91,46 @@ class Game{
         }
     }
 
-    static function gameList(){
+    static function gameList():array{
         return Game::$gameList;
     }
 
-    function creating(){
-
-        return(\json_encode(\array_merge(['created'=>true],\get_object_vars($this))));
+    function creating():string{
+    	return(\json_encode(\array_merge(['created'=>true],$this->playersToJson())));
     }
 
-    function joining(string $id, string $pseudo)
+    function joining(Player $player):string
     {
-        $this->players[$id]=$pseudo;
-        return(\json_encode(\array_merge(['joined'=>true],\get_object_vars($this))));
+        $this->players[$player->getId()]=$player;
+        return(\json_encode(\array_merge(['joined'=>true],$this->playersToJson())));
     }
 
-    function starting(){
+    function starting():string{
         global $list;
         $this->word = $list[\array_rand($list)];
         $this->liar=\array_rand($this->players);
         $this->state=1;
-        return(\json_encode(\array_merge(['starting'=>true],\get_object_vars($this))));
+        return(\json_encode(\array_merge(['starting'=>true],$this->playersToJson())));
     }
 
-    function leaving(string $id){
+    function leaving(string $id):string{
         unset($this->players[$id]);
         return(\json_encode(['leaving'=>$id]));
     }
 
-    function stopping(){
+    function stopping():string{
         Game::deleteGame($this->id);
-        return(\json_encode(\array_merge(['stopped'=>true],\get_object_vars($this))));
+        return(\json_encode(\array_merge(['stopped'=>true],$this->playersToJson())));
+    }
+    
+    function playersToJson():array{
+    	$convertedPlayers=[];
+    	var_dump($this->getPlayers());
+    	$self=clone $this;
+    	foreach($self->getPlayers() as $player){
+    		$convertedPlayers[$player->getId()]=$player->getPseudo();
+    	}
+    	$self->setPlayers($convertedPlayers);
+    	return(\get_object_vars($self));
     }
 }

@@ -5,6 +5,7 @@ require_once '../app/classes/game.php';
 require_once '../database.php';
 
 use classes\Game;
+use classes\Player;
 use Workerman\Worker;
 
 $ws_worker = new Worker("websocket://0.0.0.0:2346");
@@ -32,8 +33,9 @@ $ws_worker->onMessage = function ($connection, $data) use ($ws_worker){
     }
 
     if(isset($dataArray->create) && $dataArray->create){
-        $ws_worker->players[$connection->id][]=$dataArray->game_id;
-        $ws_worker->games[$dataArray->game_id]=new Game($connection->id,$dataArray->name,$dataArray->max,$dataArray->pseudo,$dataArray->game_id,$dataArray->public);
+    	$player=new Player($connection->id,$dataArray->pseudo,$dataArray->game_id);
+        $ws_worker->players[$connection->id][]=$player;
+        $ws_worker->games[$dataArray->game_id]=new Game($dataArray->name,$dataArray->max,$player,$dataArray->game_id,$dataArray->public);
         $connection->send($ws_worker->games[$dataArray->game_id]->creating());
     }
 
@@ -41,13 +43,14 @@ $ws_worker->onMessage = function ($connection, $data) use ($ws_worker){
         $game=$ws_worker->games[$dataArray->game_id];
         if ($game->getMax() > $game->getPlayersNumber()) {
             if ($game->getState() == 0) {
-                $ws_worker->players[$connection->id][] = $dataArray->game_id;
-                $data = $game->joining($connection->id, $dataArray->pseudo);
+            	$player=new Player($connection->id,$dataArray->pseudo,$dataArray->game_id);
+                $ws_worker->players[$connection->id][] = $player;
+                $data = $game->joining($player);
                 $connection->send($data);
-                foreach ($game->getPlayers() as $i => $value) {
-                    if ($i != $self->id) {
-                        $connection = $ws_worker->connections[$i];
-                        $connection->send(\json_encode(['id' => $self->id, 'joining' => $game->getPlayers()[$self->id]]));
+                foreach ($game->getPlayers() as $player) {
+                    if ($player->getId() != $self->id) {
+                    	$connection = $ws_worker->connections[$player->getId()];
+                    	$connection->send(\json_encode(['id' => $self->id, 'joining' => $game->getPlayer($self->id)->getPseudo()]));
                     }
                 }
             } else {
@@ -62,9 +65,9 @@ $ws_worker->onMessage = function ($connection, $data) use ($ws_worker){
         $game=$ws_worker->games[$dataArray->game_id];
         if($game->getCreator()==$connection->id){
             $data=$game->starting();
-            foreach($game->getPlayers() as $i => $value){
-                $connection = $ws_worker->connections[$i];
-                if($game->getLiar()==$i){
+            foreach($game->getPlayers() as $player){
+            	$connection = $ws_worker->connections[$player->getId()];
+            	if($game->getLiar()==$player->getId()){
                     $copy=$game;
                     $connection->send($copy->setMenteur());
                     unset($copy);
@@ -80,14 +83,10 @@ $ws_worker->onMessage = function ($connection, $data) use ($ws_worker){
         $game=$ws_worker->games[$dataArray->game_id];
         if($game->getCreator()==$connection->id){
             $data=$game->stopping();
-            foreach($game->getPlayers() as $i => $value){
-                $connection = $ws_worker->connections[$i];
+            foreach($game->getPlayers() as $player){
+            	$connection = $ws_worker->connections[$player->getId()];
                 $connection->send($data);
-                foreach($ws_worker->players[$i] as $gkey=>$gvalue){
-                    if($gvalue==$dataArray->game_id){
-                        unset($ws_worker->players[$i][$gkey]);
-                    }
-                }
+                unset($ws_worker->players[$player->getId()]);
             }
             unset($ws_worker->games[$dataArray->game_id]);
         }
@@ -116,23 +115,23 @@ $ws_worker->onClose = function ($connection) use($ws_worker){
     global $ws_worker;
     $self=$connection;
     if(isset($ws_worker->players[$connection->id])){
-        foreach($ws_worker->players[$connection->id] as $i=>$val){
-            if($connection->id==$ws_worker->games[$val]->getCreator()){
-                foreach($ws_worker->games[$val]->getPlayers() as $key => $value){
-                    $connection = $ws_worker->connections[$key];
-                    $connection->send($ws_worker->games[$val]->stopping());
-
-                }
-                unset($ws_worker->games[$val]);
-            }
-            else{
-                $data=$ws_worker->games[$val]->leaving($self->id);
-                foreach($ws_worker->games[$val]->getPlayers() as $playerKey => $playerValue){
-                    $connection=$ws_worker->connections[$playerKey];
-                    $connection->send($data);
-                }
-            }
-        }
+    	$player=$ws_worker->players[$connection->id];
+    	$game=$ws_worker->games[$player->getGame()];
+    	if(isset($player)){
+    		if($connection->id==$game->getCreator()){
+    			foreach($game->getPlayers() as $p){
+    				$connection = $ws_worker->connections[$p->getId()];
+    				$connection->send($game->stopping());
+    			}
+    		}else{
+    			$data=$game->leaving($self->id);
+    			foreach($game->getPlayers() as $p){
+    				$connection=$ws_worker->connections[$p->getId()];
+    				$connection->send($data);
+    			}
+    		}
+    		unset($ws_worker->games[$player->getGame()]);
+    	}
     }
     echo "Connection closed\n";
 };
