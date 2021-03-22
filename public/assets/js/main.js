@@ -101,7 +101,7 @@ window.ws.onmessage = function(e) {
 		var list=JSON.parse(JSON.stringify(obj.list));
 		$("#table_join tbody tr:first").remove();
 		if(list.length==0){
-			$("#table_join").find('tbody').append('<tr><td colSpan="3">Il n\'y a pas de partie disponible, créez en une !</td></tr>');
+			$("#table_join").find('tbody').append('<tr><td colSpan="3">'+{{ t("empty",[],"test") }}+'</td></tr>');
 		}
 		for(const[i,value] of Object.entries(list)){
 			console.log(value.players.toString());

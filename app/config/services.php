@@ -6,3 +6,4 @@ use Ubiquity\controllers\Router;
 Router::start();
 Router::addRoute("_default", "controllers\\IndexController");
 \Ubiquity\assets\AssetsManager::start($config);
+Ubiquity\translation\TranslatorManager::start('fr_FR');

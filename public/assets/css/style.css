@@ -1,9 +1,9 @@
 @keyframes bounce{
-	0% {transform: translateY(0);}
-	25%  {transform: translateY(-50px) translateX(10px) rotate(5deg);}
-	50%   {transform: translateY(0);}
-	75%  {transform: translateY(-50px) translateX(-10px) rotate(-5deg);}
-	100%   {transform: translateY(0);}
+	0% {transform: translateY(0);height:90%;}
+	25%  {transform: translateY(-50px) translateX(10px) rotate(5deg);height:100%;}
+	50%   {transform: translateY(0);height:90%;}
+	75%  {transform: translateY(-50px) translateX(-10px) rotate(-5deg);height:100%;}
+	100%   {transform: translateY(0);height:90%;}
 }
 
 body{
@@ -13,6 +13,15 @@ body{
 	justify-content:center;
 	align-items:center;
 	flex-direction:column;
+}
+
+#form_create{
+	background:white;
+	border-radius:10px;
+	padding:20px;
+	box-shadow: 0px 1px 28px -5px rgba(0,0,0,0.5);
+	-webkit-box-shadow: 0px 1px 28px -5px rgba(0,0,0,0.5);
+	-moz-box-shadow: 0px 1px 28px -5px rgba(0,0,0,0.5);
 }
 
 #logo{
@@ -27,7 +36,6 @@ body{
 }
 
 #logo img{
-	height:100%;
 	width:auto;
 	animation: bounce 2s ease infinite;
 }
@@ -51,11 +59,10 @@ body{
 }
 
 #container{
-	width:50%;
+	width:50vw;
 }
 
 #game{
-	text-shadow: 0px 0px 9px rgba(255, 255, 255, 1);
 	font-size:80px;
 }
 

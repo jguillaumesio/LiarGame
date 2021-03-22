@@ -1,0 +1,2 @@
+<?php
+return array("create"=>"Créer une partie","join"=>"Rejoindre une partie","name"=>"Nom de la partie","pseudo"=>"Votre pseudo","maxPlayers"=>"Nombre maximum de joueurs","public"=>"Partie public ?","cancel"=>"Annuler","start"=>"Commencer la partie","finish"=>"Finir la partie","validate"=>"Valider","labelname"=>"Nom","labelplayer"=>"Joueurs","empty"=>"Il n'y a pas de partie disponible, créez en une !");
