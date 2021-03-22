@@ -1,5 +1,5 @@
 <?php
-namespace models;
+namespace classes;
 
 class Game{
     private static array $gameList=[];

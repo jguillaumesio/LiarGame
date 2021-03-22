@@ -4,7 +4,7 @@ require_once './vendor/autoload.php';
 require_once '../app/classes/game.php';
 require_once '../database.php';
 
-use models\Game;
+use classes\Game;
 use Workerman\Worker;
 
 $ws_worker = new Worker("websocket://0.0.0.0:2346");

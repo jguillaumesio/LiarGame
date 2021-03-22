@@ -4,7 +4,6 @@ namespace services\UI;
 
 use Ajax\php\ubiquity\JsUtils;
 use Ubiquity\controllers\Router;
-use Ubiquity\translation\Translator;
 use Ubiquity\translation\TranslatorManager;
 
 class IndexUI {

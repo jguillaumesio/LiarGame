@@ -62,6 +62,10 @@ body{
 	width:50vw;
 }
 
+#container .ui.button{
+	margin:0 !important;
+}
+
 #game{
 	font-size:80px;
 }
